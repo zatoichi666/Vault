@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<metadata>
+  <filename>../../../Display/TextAnalyzer.cs</filename>
+  <version>1</version>
+  <time>19810410031414</time>
+  <description>This is a C# file containing the implementation for the TextAnalyzer class</description>
+  <size>1262</size>
+  <category>prototype</category>
+  <keyword>CSharp</keyword>
+  <keyword>code</keyword>
+  <dependency>C:\School\CSE-681\Project2-TextAnalyzer\TextAnalyzer\TextAnalyzer\TextAnalyzerJob.cs&gt;Aggregation</dependency>
+  <dependency>C:\School\CSE-681\Project2-TextAnalyzer\TextAnalyzer\TextAnalyzer\CommandLineProcessor.cs&gt;Aggregation</dependency>
+  <dependency>C:\School\CSE-681\Project2-TextAnalyzer\TextAnalyzer\TextAnalyzer\TextQuery.cs&gt;Aggregation</dependency>
+  <dependency>C:\School\CSE-681\Project2-TextAnalyzer\TextAnalyzer\TextAnalyzer\MetadataQuery.cs&gt;Aggregation</dependency>
+</metadata>

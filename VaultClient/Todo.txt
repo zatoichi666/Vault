@@ -1,0 +1,12 @@
+﻿Todo
+1. Move navigation portions to a left column, vertically stacked. (3) .. done
+2. Add chunking to file transfers when appropriate (2) x
+3. Add dependency support (1) .. done
+	a. List of children along with content .. done
+	b. List of parents along with content .. done
+	c. Generate dependency content .. done
+4. Ability to edit metadata in content view (check requirements) x
+5. When file is Inserted, get new file in Nav View .. done
+6. When file is queried and selected, get new file in Nav View .. done
+7. Click on parent or child, update content view .. done
+8. Filter files in nav view by category x

@@ -1,0 +1,114 @@
+﻿<Window x:Class="WPF_DispatcherDemo.NavWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Vault Client" Height="500" Width="1345">
+    <!-- 
+  /////////////////////////////////////////////////////////////
+  // MainWindow.xaml - WPF Dispatcher Demo                   //
+  //                                                         //
+  // Matthew Synborski Project 4 CSE-681                     //
+  /////////////////////////////////////////////////////////////
+  -->
+    <DockPanel>
+        <Grid DockPanel.Dock="Bottom">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" Name="col0" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Name="textBlock1"  
+                 VerticalAlignment="Center" HorizontalAlignment="Left" 
+                 Width="{Binding Path=Width, ElementName=col0}" Margin="30" Grid.Column="0" />
+            <Button Name="InsertButton" Content="Insert File"
+              Width="100" Margin="35,10,506.6,30" Click="InsertButton_Click" />
+
+            <Button x:Name="QueryButton" Content="Perform a Query" 
+            	Width="100" Margin="159,10,382.6,30" Click="QueryButton_Click" />
+            <Button x:Name="QuitButton" Content="Quit" 
+            	Width="100" Margin="404,10,388,30" Click="QuitButton_Click" />
+            <CheckBox Name="ConsoleShow" IsChecked="False" Margin="160,52,621,13.6" Unchecked="ConsoleShow_Unchecked" Checked="ConsoleShow_Checked">Console Visibility</CheckBox>
+            <Button x:Name="NavButton" Content="Nav Get (Temp)"
+            	Width="100" Margin="528,10,264,29.6" Click="NavButton_Click" />
+        </Grid>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="5*"/>
+            </Grid.ColumnDefinitions>
+            <GroupBox Header="Vault Navigation" Grid.Column="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <GroupBox Header="Categories in the Vault" Grid.Row="0">
+
+                        <ListBox Name="listCategory1" Margin="0,0,0,0.4" SelectionChanged="listCategory1_SelectionChanged"/>
+                    </GroupBox>
+                    <GroupBox Header="Files in the Vault" Grid.Row="1">
+                        <ListBox Name="listVaultFiles1" Margin="0,0,0,0.4" RenderTransformOrigin="0.276,0.507" SelectionChanged="listVaultFiles1_SelectionChanged" />
+                    </GroupBox>
+                </Grid>
+            </GroupBox>
+
+
+            <GroupBox Header="Current File Content" Grid.Column="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="2*"></ColumnDefinition>
+                        <ColumnDefinition Width="2*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Column="0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <GroupBox Header="Parents" Grid.Row="0">
+                                <ListBox Name="ParentList" SelectionChanged="ParentList_SelectionChanged"/>
+
+                            </GroupBox>
+                            <GroupBox Header="Children" Grid.Row="1">
+                                <ListBox Name="ChildList" SelectionChanged="ChildList_SelectionChanged"/>
+                            </GroupBox>
+                        </Grid>
+                    </Grid>
+
+                    <GroupBox Header="File Contents" Grid.Column="1">
+                        <ScrollViewer>
+                            <TextBox Name="textBox2" IsReadOnly="True" FontFamily="Consolas"   Height="Auto"/>
+                        </ScrollViewer>
+                    </GroupBox>
+                    <GroupBox Header="File Metadata" Grid.Column="2">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="10*"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <ScrollViewer Grid.Row="0">
+                                <TextBox Name="textBox3" IsReadOnly="True" FontFamily="Consolas"   Height="Auto"/>
+                            </ScrollViewer >
+                            <Grid Grid.Row="1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0" Margin="+10,0" Width="100">MetadataTag
+                                    </TextBox>
+                                    <TextBox Grid.Column="1" Name="TagContent" Width="100">Content</TextBox>
+                                    <Button Grid.Column="2" Margin="+20,0" Width="120">Insert/Replace Tag</Button>
+                                </Grid>
+
+                            </Grid>
+                        </Grid>
+
+
+                    </GroupBox>
+                </Grid>
+            </GroupBox>
+        </Grid>
+    </DockPanel>
+</Window>

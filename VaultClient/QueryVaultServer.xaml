@@ -1,0 +1,64 @@
+﻿<Window x:Class="WPF_DispatcherDemo.QueryVaultServer"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Query the Vault Server" Height="300" Width="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+        <GroupBox Header="Query">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <GroupBox Header="Metadata Query Terms (comma separated)" Grid.Row="0">
+                    <TextBox Name="MetadataQueryTextBox"/>
+                </GroupBox>
+                <GroupBox Header="Text Query Terms (comma separated)" Grid.Row="1">
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            
+                        </Grid.ColumnDefinitions>
+                        <TextBox Name="TextQueryTextBox" Grid.Column="0"/>
+                                    
+                    </Grid>                    
+                </GroupBox >
+                <Grid Grid.Row="2">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions> 
+                        
+                        <RadioButton Name="All" Grid.Row="0" Grid.Column="0" GroupName="TextQueryConfig">All</RadioButton>
+                        <RadioButton Name="One" Grid.Row="0"  IsChecked="True"  Grid.Column="1" GroupName="TextQueryConfig">One</RadioButton>
+                        <CheckBox Name="RecursiveCheckbox" Grid.Row="1" Grid.Column="0" IsChecked="False" >Recursive</CheckBox>
+                    </Grid>
+                </Grid>
+                <Grid Grid.Row="3">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Content="Run Query" Grid.Column="0" Click="QueryButton_Click"/>
+                        <Button Name="CancelButton" Content="Cancel" Grid.Column="1" Click="CancelButton_Click"/>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </GroupBox>
+
+        <ScrollViewer Grid.Column="1">
+            <ListBox Name="QueryResults" SelectionChanged="QueryResults_SelectionChanged" />
+        </ScrollViewer>
+    </Grid>
+</Window>

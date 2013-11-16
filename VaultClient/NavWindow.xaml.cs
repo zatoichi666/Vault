@@ -37,6 +37,9 @@ namespace WPF_DispatcherDemo
         Sender sender = new Sender();
         Receiver receiver = null;
 
+        bool raceCategory = false;
+        
+
         public NavWindow()
         {
             //ConsoleManager.ConsoleManager.Show();
@@ -255,9 +258,13 @@ namespace WPF_DispatcherDemo
                 if (listVaultFiles1.SelectedIndex > -1)
                 {
                     vm.UpdateFileIndex(listVaultFiles1.SelectedItem.ToString());
-                    //RequestNav();
+                    e.Handled = true;
+
+                    RequestNav();
+            
+            
                 }
-                e.Handled = true;
+                
 
             }
             catch (InvalidOperationException ex)
@@ -272,8 +279,11 @@ namespace WPF_DispatcherDemo
             // Update the vaultmodel
             vm._indexSelectedCategory = listCategory1.SelectedIndex;
 
-            //RequestNav();
             e.Handled = true;
+
+            //RequestNav();
+            
+            
         }
 
         private void kill()
@@ -331,9 +341,9 @@ namespace WPF_DispatcherDemo
             if (ChildList.SelectedIndex > -1)
             {
                 vm.UpdateFileIndex(ChildList.SelectedItem.ToString());
-                //RequestNav();
+                RequestNav();
             }
-            e.Handled = true;
+            
         }
 
         private void ParentList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -341,9 +351,39 @@ namespace WPF_DispatcherDemo
             if (ParentList.SelectedIndex > -1)
             {
                 vm.UpdateFileIndex(ParentList.SelectedItem.ToString());
-                //RequestNav();
+                RequestNav();
             }
-            e.Handled = true;
+           
+        }
+
+        private void InsertNewMetadataFile(String ContentFilename)
+        {
+            String fileContent = File.ReadAllText(ContentFilename);
+            String submitMsg = textBox3.Text + "[" + fileContent + "]";
+
+
+            Sender msgsender = new Sender();
+            Receiver receiver = null;
+
+            string ServerUrl = "http://localhost:8000/CommService";
+            msgsender.Connect(ServerUrl);
+            msgsender.Start();
+
+            string ClientUrl = "http://localhost:8001/CommService";
+            receiver = new Receiver(ClientUrl);
+
+
+
+            EchoCommunicator echo = new EchoCommunicator();
+            echo.Name = "submit-echo";
+            receiver.Register(echo);
+            echo.Start();
+
+            ServiceMessage msg4 =
+            ServiceMessage.MakeMessage("submit", "ServiceClient", submitMsg, "no name");
+            msg4.SourceUrl = "http://localhost:8001/CommService";
+            msg4.TargetUrl = "http://localhost:8000/CommService";
+            msgsender.PostMessage(msg4);
         }
 
         private void InsertTag_Click(object sender, RoutedEventArgs e)
@@ -364,6 +404,19 @@ namespace WPF_DispatcherDemo
                 {
                     textBox3.Text = xd.ToString();
                 }));
+                String filename="";
+                var q4 = from x in
+                                     xd.Elements("metadata")
+                                     .Descendants("filename")
+
+                                 select x;
+                        foreach (var elem in q4)
+                        {
+                            filename = elem.Value;
+                        }
+
+                InsertNewMetadataFile(filename);
+                RequestNav();
 
                 // Find the tag in the metadata
             }

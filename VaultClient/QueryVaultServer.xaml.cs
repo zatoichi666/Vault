@@ -50,10 +50,15 @@ namespace WPF_DispatcherDemo
             bool findAllOption = (bool)All.IsChecked;
             bool recursiveOption = (bool)RecursiveCheckbox.IsChecked;
 
+            String implicitCategory = MetadataQueryTextBox.Text;
+            if (CategoryFilterTextBox.Text.Trim().Length > 0)
+                implicitCategory += "categories";
+
+
             XDocument xd = new XDocument(
                 new XElement("Query",
                     new XElement("TextQuery", TextQueryTextBox.Text),
-                    new XElement("MetadataQuery", MetadataQueryTextBox.Text),
+                    new XElement("MetadataQuery", implicitCategory),
                     new XElement("FindAll", findAllOption),
                     new XElement("Recursive", recursiveOption)));
 
@@ -84,7 +89,8 @@ namespace WPF_DispatcherDemo
                             select x;
                     foreach (var elem in q)
                     {
-                        QueryResults.Items.Add(elem.ToString());
+                        if (elem.ToString().Contains(CategoryFilterTextBox.Text.Trim()))
+                            QueryResults.Items.Add(elem.ToString());
                     }
                 }
                 catch

@@ -9,4 +9,5 @@
 5. When file is Inserted, get new file in Nav View .. done
 6. When file is queried and selected, get new file in Nav View .. done
 7. Click on parent or child, update content view .. done
-8. Filter files in nav view by category x
+8. Filter files in nav view by category .. done
+9. Filter query results by category .. done

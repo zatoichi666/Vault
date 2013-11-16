@@ -42,10 +42,10 @@
                     </Grid.RowDefinitions>
                     <GroupBox Header="Categories in the Vault" Grid.Row="0">
 
-                        <ListBox Name="listCategory1" Margin="0,0,0,0.4" SelectionChanged="listCategory1_SelectionChanged"/>
+                        <ListBox Name="listCategory1" Margin="0,0,0,0.4"  SelectionChanged="listCategory1_SelectionChanged"/>
                     </GroupBox>
                     <GroupBox Header="Files in the Vault" Grid.Row="1">
-                        <ListBox Name="listVaultFiles1" Margin="0,0,0,0.4" RenderTransformOrigin="0.276,0.507" SelectionChanged="listVaultFiles1_SelectionChanged" />
+                        <ListBox Name="listVaultFiles1" Margin="0,0,0,0.4" RenderTransformOrigin="0.276,0.507" SelectionChanged="listVaultFiles1_SelectionChanged"/>
                     </GroupBox>
                 </Grid>
             </GroupBox>
@@ -96,10 +96,15 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBox Grid.Column="0" Margin="+10,0" Width="100">MetadataTag
-                                    </TextBox>
+                                    <ComboBox Name="TagCombo" Grid.Column="0" Margin="+10,0" Width="100">
+                                        <ComboBoxItem>categories</ComboBoxItem>
+                                        <ComboBoxItem>keyword</ComboBoxItem>
+                                        <ComboBoxItem>description</ComboBoxItem>
+                                        <ComboBoxItem>dependency</ComboBoxItem>
+                                        <ComboBoxItem>version</ComboBoxItem>
+                                    </ComboBox>
                                     <TextBox Grid.Column="1" Name="TagContent" Width="100">Content</TextBox>
-                                    <Button Grid.Column="2" Margin="+20,0" Width="120">Insert/Replace Tag</Button>
+                                    <Button Name="InsertTag" Grid.Column="2" Margin="20.2,0,3,0.2" Width="120" Height="31" VerticalAlignment="Bottom" Click="InsertTag_Click" >Insert/Replace Tag</Button>
                                 </Grid>
 
                             </Grid>

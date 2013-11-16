@@ -48,6 +48,7 @@ using System.Xml.Linq;
 using System.IO;
 using System.Collections.Generic;
 
+
 namespace DocumentVault
 {
     // Echo Communicator
@@ -109,7 +110,13 @@ namespace DocumentVault
             Console.WriteLine("MetadataQuery terms: {0}", tj.taskPath);
             return tj;
         }
-
+        /// <summary>
+        /// Performs the query as requested by the user, returns a response containing hte results of the query
+        /// Text Query will be performed regardless of the results of the Metadata Query
+        /// Metadata Query will be performed regardless of the results of the Text Query
+        /// Results will be combined for instances where a file contains a given metadata tag in the search while
+        /// also containing text in the search
+        /// </summary>
         protected override void ProcessMessages()
         {
             while (true)
@@ -117,40 +124,40 @@ namespace DocumentVault
                 ServiceMessage msg = bq.deQ();
                 if (msg.Contents == "quit")
                     break;
-
-                //String[] fileExt = { "*.cs", "*.csproj", "*.py" };
                 String[] fileExt = { "*.*" };
                 Directory.SetCurrentDirectory(Directory.GetCurrentDirectory());
                 String currDir = Directory.GetCurrentDirectory();
-
                 TextAnalyzerJob tj = DecodeQueryMessage(msg.Contents);
                 fTab = FileTable.GetFiles(currDir, fileExt, tj.recursive);
-
                 foreach (String s in fTab) { Console.Write("{0}\n", s); }
-
                 List<XmlSearchResult_c> tq = TextQuery.run(fTab, tj.textQueryList.ToArray(), tj.mustFindAll, tj.metadataQueryList.ToArray());
                 XDocument xr = new XDocument(new XElement("Query"));
-
                 foreach (XmlSearchResult_c s in tq)
                 {
+                    String filename = Path.GetFileName(s.filename);
+                    XElement xe = new XElement("File", Path.GetFileName(filename));
                     if (s.textQueryFound)
                     {
-                        String filename = Path.GetFileName(s.filename);
                         String[] ls = s.tagAndValue.ToArray();
                         String[] sep = { ":" };
-                        XElement xe = new XElement("File", Path.GetFileName(filename));
-                        foreach (String tagAndValue in s.tagAndValue)
+                        xe.Add(new XElement("TextQuerySuccess"));
+                    }
+                    if (s.tagAndValue.Count > 0)
+                    {
+                        String[] sep = { ":" };
+                        foreach (String t in s.tagAndValue)
                         {
                             xe.Add(new XElement(
-                                tagAndValue.Split(sep, StringSplitOptions.None)[0],
-                                tagAndValue.Split(sep, StringSplitOptions.None)[1])
+                            t.Split(sep, StringSplitOptions.None)[0],
+                            t.Split(sep, StringSplitOptions.None)[1])
                             );
                         }
+                    }
+                    if (s.tagAndValue.Count > 0 || s.textQueryFound)
+                    {
                         xr.Element("Query").Add(xe);
                     }
                 }
-                // Make the response 
-                // TODO: populate the query response
                 ServiceMessage reply = ServiceMessage.MakeMessage("query-echo", "query", xr.ToString());
                 reply.TargetUrl = msg.SourceUrl;
                 reply.SourceUrl = msg.TargetUrl;
@@ -160,32 +167,22 @@ namespace DocumentVault
         }
     }
     // Navigate Communicator
-
     class NavigationCommunicator : AbstractCommunicator
     {
         private List<String> GetParents(String childFile)
         {
             List<String> Parents = new List<String>();
-            // Iterate through the .metadata files, for each one, do linq query of dependencies
-            
-            List<String> fl = GetFileList();
-
+            List<String> fl = GetFileList("");
             List<String> metadataTerms = new List<String>();
             metadataTerms.Add("dependency");
-
             List<String> emptyText = new List<String>();
             List<XmlSearchResult_c> tq = TextQuery.run(fl, emptyText.ToArray(), false, metadataTerms.ToArray());
             String[] separators = { ":", ";", "dependency" };
             foreach (XmlSearchResult_c xsr in tq)
             {
-
-                //xsr.tagAndValue
                 foreach (String s in xsr.tagAndValue)
                 {
-
-                    
                     String[] cat2 = s.Split(separators, StringSplitOptions.RemoveEmptyEntries);
-                    
                     foreach (String s2 in cat2)
                     {
                         if (childFile == s2)
@@ -193,20 +190,22 @@ namespace DocumentVault
                             Parents.Add(xsr.filename);
                         }
                     }
-                    
                 }
             }
             return Parents;
         }
 
-        private List<String> GetFileList()
+        /// <summary>
+        /// Provides the list of files on the filesystem of the Server that have an associated .metadata file at the same level of the filesystem
+        /// </summary>
+        /// <param name="Category"></param> Pass an empty string ot get the list of files unfiltered by category.  Pass a string to filter by a single category
+        /// <returns></returns>
+        private List<String> GetFileList(String Category)
         {
             String[] fileExt = { "*.*" };
             Directory.SetCurrentDirectory(Directory.GetCurrentDirectory());
             String currDir = Directory.GetCurrentDirectory();
-
             IEnumerable<String> fTab = FileTable.GetFiles(currDir, fileExt, true);
-
             List<String> FileList = new List<String>();
             foreach (String s in fTab)
             {
@@ -215,14 +214,38 @@ namespace DocumentVault
                     FileList.Add(Path.GetFileName(s));
                 }
             }
+            // Filter the FileList by the category provided
+            if (Category.Length > 0)
+            {
+                List<String> categoryInList = new List<String>();
+                categoryInList.Add("categories");
+                List<String> emptyText = new List<String>();
+                List<XmlSearchResult_c> tq = TextQuery.run(FileList, emptyText.ToArray(), false, categoryInList.ToArray());
+                FileList.Clear();
+                foreach (XmlSearchResult_c xsr in tq)
+                {
+                    foreach (String s in xsr.tagAndValue)
+                    {
+                        String[] l1separators = { ":" };
+                        String[] l2separators = { ";" };
+                        String cat = s.Split(l1separators, StringSplitOptions.None)[1];
+                        String[] categories = cat.Split(l2separators, StringSplitOptions.None);
+                        foreach (String c in categories)
+                        {
+                            if (c == Category)
+                                FileList.Add(xsr.filename);
+                        }                        
+                    }
+                }
+                XDocument xr = new XDocument(new XElement("Query"));
+            }
             return FileList;
         }
 
-        
-
         private List<String> GetCategoryList()
         {
-            List<String> fl = GetFileList();
+            // Get the files without filtering by category
+            List<String> fl = GetFileList("");
             foreach (String s in fl) { Console.Write("{0}\n", s); }
             List<String> metadataTerms = new List<String>();
             metadataTerms.Add("categories");
@@ -236,17 +259,22 @@ namespace DocumentVault
                 foreach (String s in xsr.tagAndValue)
                 {
                     String[] separators = { ":" };
+                    String[] separatorsl2 = { ";" };
                     String cat = s.Split(separators, StringSplitOptions.None)[1];
-                    if (!categories.Contains(cat))
+                    String[] cat2 = cat.Split(separatorsl2, StringSplitOptions.None);
+                    foreach (String c in cat2)
                     {
-                        categories.Add(cat);
+                        if (!categories.Contains(c))
+                        {
+                            categories.Add(c);
+                        }
                     }
                 }
             }
             return categories;
         }
 
-
+        // GetChildren() is implemented inline in the formation of the XDocument object
 
         protected override void ProcessMessages()
         {
@@ -255,45 +283,48 @@ namespace DocumentVault
                 ServiceMessage msg = bq.deQ();
                 //Console.Write("\n  {0} Recieved Message:\n", msg.TargetCommunicator);
                 msg.ShowMessage();
-                
-                XDocument xd = XDocument.Parse(msg.Contents);
-                String CategorySelected="";
-                String FileNameSelected="";
-
-                var q1 = from x in
-                    xd.Elements("ContentRequest")
-                    .Descendants("Category")
-                    
-                select x;
-                foreach (var elem in q1)
-                {
-                    CategorySelected = elem.Value;                    
-                }
-
-                var q2 = from x in
-                    xd.Elements("ContentRequest")
-                    .Descendants("File")
-                    
-                select x;
-                foreach (var elem in q2)
-                {
-                    FileNameSelected = elem.Value;                    
-                }
-
-                String fileList = String.Join(";", GetFileList());
-                String categoryList = String.Join(";", GetCategoryList());
 
                 if (msg.Contents == "quit")
                     break;
+
+                XDocument xd = XDocument.Parse(msg.Contents);
+                String CategorySelected = "";
+                String FileNameSelected = "";
+
+                var q1 = from x in
+                             xd.Elements("ContentRequest")
+                             .Descendants("Category")
+                         select x;
+                foreach (var elem in q1)
+                {
+                    CategorySelected = elem.Value;
+                }
+
+                var q2 = from x in
+                             xd.Elements("ContentRequest")
+                             .Descendants("File")
+
+                         select x;
+                foreach (var elem in q2)
+                {
+                    FileNameSelected = elem.Value;
+                }
+
+                // Filter the filelist by category
                 
+                String fileList = String.Join(";", GetFileList(CategorySelected));
+                String categoryList = String.Join(";", GetCategoryList());
+
+
+
                 // Get the File Content
                 String FileContent = "";
                 String MetadataContent = "";
                 if (File.Exists(FileNameSelected))
                     FileContent = File.ReadAllText(FileNameSelected);
-              
+
                 if (File.Exists(FileNameSelected + ".metadata"))
-                    MetadataContent = File.ReadAllText(FileNameSelected + ".metadata");                
+                    MetadataContent = File.ReadAllText(FileNameSelected + ".metadata");
 
                 String FileContent64enc = Convert.ToBase64String(Encoding.UTF8.GetBytes(FileContent));
                 String Metadata64enc = Convert.ToBase64String(Encoding.UTF8.GetBytes(MetadataContent));
@@ -308,7 +339,7 @@ namespace DocumentVault
                     {
 
                         XDocument md = XDocument.Parse(MetadataContent);
-                        
+
 
                         var q4 = from x in
                                      md.Elements("metadata")
@@ -394,13 +425,16 @@ namespace DocumentVault
             while (true)
             {
                 ServiceMessage msg = bq.deQ();
+
+                if (msg.Contents == "quit")
+                    break;
+
                 Console.Write("\n  {0} Recieved Message:\n", msg.TargetCommunicator);
                 //msg.ShowMessage();
 
                 bool result = SubmitFileFromSubmissionMessage(msg);
 
-                if (msg.Contents == "quit")
-                    break;
+
 
                 ServiceMessage reply = ServiceMessage.MakeMessage("submit-echo", "submit", result.ToString());
                 reply.TargetUrl = msg.SourceUrl;

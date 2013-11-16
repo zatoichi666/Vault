@@ -10,15 +10,19 @@
         <GroupBox Header="Query">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="2*"/>
+                    <RowDefinition Height="3*"/>
+                    <RowDefinition Height="3*"/>
+                    <RowDefinition Height="2*"/>
+                    
                 </Grid.RowDefinitions>
-                <GroupBox Header="Metadata Query Terms (comma separated)" Grid.Row="0">
+                <GroupBox Header="Category Filter" Grid.Row="0">
+                    <TextBox Name="CategoryFilterTextBox"/>
+                </GroupBox>
+                <GroupBox Header="Metadata Query Terms (comma separated)" Grid.Row="1">
                     <TextBox Name="MetadataQueryTextBox"/>
                 </GroupBox>
-                <GroupBox Header="Text Query Terms (comma separated)" Grid.Row="1">
+                <GroupBox Header="Text Query Terms (comma separated)" Grid.Row="2">
                     <Grid Grid.Row="1">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -28,7 +32,7 @@
                                     
                     </Grid>                    
                 </GroupBox >
-                <Grid Grid.Row="2">
+                <Grid Grid.Row="3">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>

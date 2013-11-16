@@ -223,7 +223,7 @@ namespace WPF_DispatcherDemo
 
         private void QueryButton_Click(object sender, RoutedEventArgs e)
         {
-            QueryVaultServer qvs = new QueryVaultServer( this );
+            QueryVaultServer qvs = new QueryVaultServer(this);
             qvs.Show();
         }
 
@@ -250,13 +250,14 @@ namespace WPF_DispatcherDemo
         {
             try
             {
-                
+
 
                 if (listVaultFiles1.SelectedIndex > -1)
                 {
                     vm.UpdateFileIndex(listVaultFiles1.SelectedItem.ToString());
-                    RequestNav();
+                    //RequestNav();
                 }
+                e.Handled = true;
 
             }
             catch (InvalidOperationException ex)
@@ -270,20 +271,44 @@ namespace WPF_DispatcherDemo
         {
             // Update the vaultmodel
             vm._indexSelectedCategory = listCategory1.SelectedIndex;
-            vm._indexSelectedContentFile = -1;
 
-            listVaultFiles1.SelectedIndex = vm._indexSelectedContentFile;
-            Console.Write(vm.ToXmlMessage());
+            //RequestNav();
+            e.Handled = true;
         }
 
-        private void QuitButton_Click(object sender, RoutedEventArgs e)
+        private void kill()
         {
+            string ServerUrl = "http://localhost:8000/CommService";
+            sender.Connect(ServerUrl);
+            sender.Start();
+
+            string ClientUrl = "http://localhost:8001/CommService";
+            receiver = new Receiver(ClientUrl);
+
+            EchoCommunicator echo = new EchoCommunicator();
+            echo.Name = "nav-echo";
+            receiver.Register(echo);
+            echo.Start();
+
+            ServiceMessage msg4 =
+  ServiceMessage.MakeMessage("echo", "ServiceClient", "exit", "no name");
+            msg4.SourceUrl = ClientUrl;
+            msg4.TargetUrl = ServerUrl;
+            sender.PostMessage(msg4);
+        }
+
+        public void QuitButton_Click(object sender, RoutedEventArgs e)
+        {
+
+            kill();
+
+
+
             this.sender.Stop();
             this.sender.Wait();
             this.sender.Close();
             this.receiver.Close();
             this.Close();
-
         }
 
         private void ConsoleShow_Unchecked(object sender, RoutedEventArgs e)
@@ -306,8 +331,9 @@ namespace WPF_DispatcherDemo
             if (ChildList.SelectedIndex > -1)
             {
                 vm.UpdateFileIndex(ChildList.SelectedItem.ToString());
-                RequestNav();
+                //RequestNav();
             }
+            e.Handled = true;
         }
 
         private void ParentList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -315,7 +341,35 @@ namespace WPF_DispatcherDemo
             if (ParentList.SelectedIndex > -1)
             {
                 vm.UpdateFileIndex(ParentList.SelectedItem.ToString());
-                RequestNav();
+                //RequestNav();
+            }
+            e.Handled = true;
+        }
+
+        private void InsertTag_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                XDocument xd = XDocument.Parse(textBox3.Text);
+
+                var elements = xd.Descendants(TagCombo.Text)
+                          .ToList();
+
+
+                elements.Where(x => x.Name == TagCombo.Text).Remove();
+                xd.Element("metadata").Add(new XElement(TagCombo.Text, TagContent.Text));
+                
+
+                Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
+                {
+                    textBox3.Text = xd.ToString();
+                }));
+
+                // Find the tag in the metadata
+            }
+            catch (InvalidDataException exep)
+            {
+
             }
         }
 

@@ -32,16 +32,21 @@ namespace DocumentVault
 {
     public partial class NavWindow : Window
     {
+        QueryVaultServer qvs = null;
         List<string> foundfiles = new List<string>();
- 
+        EchoCommunicator echo = new EchoCommunicator();
         VaultModel vm = new VaultModel();
         Sender sender = new Sender();
         Receiver receiver = null;
+        
 
         public NavWindow()
         {
             //ConsoleManager.ConsoleManager.Show();
             InitializeComponent();
+            this.Unloaded += new RoutedEventHandler(NavWindow_Unloaded);
+  
+            
             RequestNav();
 
         }
@@ -49,7 +54,7 @@ namespace DocumentVault
 
         public void RequestNav()
         {
-            EchoCommunicator echo = new EchoCommunicator();
+
             string ServerUrl = "http://localhost:8000/CommService";
             sender.Connect(ServerUrl);
             sender.Start();
@@ -74,99 +79,21 @@ namespace DocumentVault
             RequestNav();
         }
 
-        private void ExtractFileList(ref VaultModel vm, XDocument xd)
-        {
-            var q1 = from x in
-                         xd.Elements("Navigation")
-                             //.Elements("FileList")
-                         .Descendants("FileList")
-                     select x;
-            foreach (var elem in q1) { vm.SetFileList(elem.Value.Split(';').ToList<string>()); }
-        }
-
-        private void ExtractCategoryList(ref VaultModel vm, XDocument xd)
-        {
-            var q2 = from x in
-                         xd.Elements("Navigation").Descendants("CategoryList")
-                     select x;
-            foreach (var elem in q2) { vm.SetCategories(elem.Value.Split(';').ToList<string>()); }
-        }
-
-        private void ExtractFileContent(ref VaultModel vm, XDocument xd)
-        {
-            var q3 = from x in
-                         xd.Elements("Navigation").Descendants("FileContent")
-                     select x;
-            foreach (var elem in q3) { vm._ContentFile = Encoding.UTF8.GetString(Convert.FromBase64String(elem.Value)); }
-        }
-
-        private void ExtractMetadataContent(ref VaultModel vm, XDocument xd)
-        {
-            var q4 = from x in
-                         xd.Elements("Navigation").Descendants("MetadataContent")
-                     select x;
-            foreach (var elem in q4) { vm._MetadataFile = Encoding.UTF8.GetString(Convert.FromBase64String(elem.Value)); }
-        }
-
-        private void ExtractParentList(ref VaultModel vm, XDocument xd)
-        {
-            var q5 = from x in
-                         xd.Elements("Navigation").Descendants("ParentList")
-                     select x;
-            foreach (var elem in q5)
-            {
-                List<String> parentList = elem.Value.Split(';').ToList<string>().Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
-                if (elem.Value.Length > 0)
-                { vm.SetParents(parentList); }
-                else
-                { vm.SetParents(new List<string>()); }
-            }
-        }
-
-        private void ExtractChildList(ref VaultModel vm, XDocument xd)
-        {
-            var q6 = from x in
-                         xd.Elements("Navigation").Descendants("ChildList")
-                     select x;
-            foreach (var elem in q6)
-            {
-                List<String> childList = elem.Value.Split(';').ToList<string>().Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
-                if (elem.Value.Length > 0)
-                { vm.SetChildren(childList); }
-                else
-                { vm.SetChildren(new List<string>()); }
-            }
-        }
-
-        public void HandleMessage(String message, ref VaultModel vm)
-        {
-            XDocument xd = XDocument.Parse(message);
-            List<String> FileList = new List<String>();
-
-            List<String> CategoryList = new List<String>();
-            this.ExtractFileList(ref vm, xd);
-            this.ExtractCategoryList(ref vm, xd);
-            this.ExtractFileContent(ref vm, xd);
-            this.ExtractMetadataContent(ref vm, xd);
-            this.ExtractParentList(ref vm, xd);
-            this.ExtractChildList(ref vm, xd);
-
-        }
-
+ 
 
         void instanceHandler_OnIncomingNavEchoEvent(object obj, EventArgs seva)
         {
             // Handle the incoming message
-            HandleMessage(((someEventArgs)seva).msg, ref vm);
+            if (!((someEventArgs)seva).msg.Equals("quit"))
+            {
+                echo.HandleMessage(((someEventArgs)seva).msg, ref vm);
 
 
-            paintCategories();
-            paintFileList();
-            paintContent();
-
+                paintCategories();
+                paintFileList();
+                paintContent();
+            }
         }
-
-
 
         public void paintCategories()
         {
@@ -224,14 +151,22 @@ namespace DocumentVault
 
         private void QueryButton_Click(object sender, RoutedEventArgs e)
         {
-            QueryVaultServer qvs = new QueryVaultServer(this);
-            qvs.Show();
+
+            if (qvs == null)
+            {
+                qvs = new QueryVaultServer(this);
+                this.Unloaded += new RoutedEventHandler(qvs.QueryVaultServer_Unloaded);
+                qvs.Show();
+            }
+            else
+            {
+                qvs.Focus();
+            }
+            
         }
 
         private void InsertButton_Click(object sender, RoutedEventArgs e)
         {
-
-
             // Show the file dialog
             listVaultFiles1.Items.Clear();
             OpenFileDialog dlg = new OpenFileDialog();
@@ -244,6 +179,7 @@ namespace DocumentVault
                 path = dlg.FileName;
                 // Spawn the window for the InsertLocalFile portion of Vault Client
                 InsertLocalFile ilf = new InsertLocalFile(path, this);
+                this.Unloaded += new RoutedEventHandler(ilf.InsertLocalFile_Unloaded);
                 ilf.Show();
             }
 
@@ -302,7 +238,8 @@ namespace DocumentVault
 
         public void QuitButton_Click(object sender, RoutedEventArgs e)
         {
-
+            echo.Stop();
+            
             // kill(); // Don't use, assumes just one client, ever.
             this.sender.Stop();
             this.sender.Wait();
@@ -355,10 +292,16 @@ namespace DocumentVault
 
         private void InsertNewMetadataFile(String ContentFilename)
         {
-            String fileContent = File.ReadAllText(ContentFilename);
-            String submitMsg = textBox3.Text + "[" + fileContent + "]";
+            String submitMsg = "~" + textBox3.Text + "[";
+            try
+            {
+                String fileContent = File.ReadAllText(ContentFilename);
+                submitMsg += fileContent ;
+            }
+            catch { }
+            submitMsg += "]";
             Sender msgsender = new Sender();
-            Receiver receiver = null;
+            //Receiver receiver = null;
             string ServerUrl = "http://localhost:8000/CommService";
             msgsender.Connect(ServerUrl);
             msgsender.Start();
@@ -368,11 +311,15 @@ namespace DocumentVault
             echo.Name = "submit-echo";
             receiver.Register(echo);
             echo.Start();
+            
             ServiceMessage msg4 =
             ServiceMessage.MakeMessage("submit", "ServiceClient", submitMsg, "no name");
             msg4.SourceUrl = "http://localhost:8001/CommService";
             msg4.TargetUrl = "http://localhost:8000/CommService";
             msgsender.PostMessage(msg4);
+            echo.Stop();
+
+            RequestNav();
         }
 
 
@@ -396,12 +343,27 @@ namespace DocumentVault
                          select x;
                 foreach (var elem in q4)
                 {
-                    filename = elem.Value;
+                    filename = System.IO.Path.GetFileName(elem.Value);
                 }
                 InsertNewMetadataFile(filename);
-                RequestNav();
+                //RequestNav();
             }
             catch { }
         }
+
+        void NavWindow_Unloaded(object sender, RoutedEventArgs e)
+        {
+            echo.Stop();
+
+            // kill(); // Don't use, assumes just one client, ever.
+            this.sender.Stop();
+            this.sender.Wait();
+            this.sender.Close();
+            this.receiver.Close();
+            System.Windows.Application.Current.Shutdown();
+
+            this.Close();
+        }
+
     }
 }

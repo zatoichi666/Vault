@@ -56,7 +56,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Button Content="Run Query" Grid.Column="0" Click="QueryButton_Click"/>
-                        <Button Name="CancelButton" Content="Cancel" Grid.Column="1" Click="CancelButton_Click"/>
+                        
                     </Grid>
                 </Grid>
             </Grid>

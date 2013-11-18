@@ -71,11 +71,21 @@ namespace DocumentVault
             while (true)
             {
                 ServiceMessage msg = bq.deQ();
-                Console.Write("\n  {0} Recieved Message:\n", msg.TargetCommunicator);
+                //Console.Write("\n  {0} Recieved Message:\n", msg.TargetCommunicator);
                 msg.ShowMessage();
-                Console.Write("\n  Echo processing completed\n");
+                //Console.Write("\n  Echo processing completed\n");
                 if (msg.Contents == "quit")
+                {
+
+                    ServiceMessage reply = ServiceMessage.MakeMessage("nav-echo", "nav", "none");
+                    reply.TargetUrl = msg.SourceUrl;
+                    reply.SourceUrl = msg.TargetUrl;
+                    AbstractMessageDispatcher dispatcher = AbstractMessageDispatcher.GetInstance();
+                    dispatcher.PostMessage(reply);
+
+
                     break;
+                }
             }
         }
     }
@@ -94,7 +104,7 @@ namespace DocumentVault
             String textQuery_s = "";
             foreach (XElement xe in tq)
             {
-                Console.WriteLine("TextQuery terms: {0}", xe.Value);
+                //Console.WriteLine("TextQuery terms: {0}", xe.Value);
                 textQuery_s += xe.Value;
             }
             String[] separators = new String[] { ",", " " };
@@ -104,7 +114,7 @@ namespace DocumentVault
             String metadataQuery_s = "";
             foreach (XElement xe in mq)
             {
-                Console.WriteLine("MetadataQuery terms: {0}", xe.Value);
+                //Console.WriteLine("MetadataQuery terms: {0}", xe.Value);
                 metadataQuery_s += xe.Value;
             }
             String[] mqList = metadataQuery_s.Split(separators, StringSplitOptions.None);
@@ -118,7 +128,7 @@ namespace DocumentVault
             Directory.SetCurrentDirectory(Directory.GetCurrentDirectory());
             String currDir = Directory.GetCurrentDirectory();
             tj.taskPath = currDir;
-            Console.WriteLine("MetadataQuery terms: {0}", tj.taskPath);
+            //Console.WriteLine("MetadataQuery terms: {0}", tj.taskPath);
             return tj;
         }
 
@@ -134,7 +144,7 @@ namespace DocumentVault
             String currDir = Directory.GetCurrentDirectory();
             TextAnalyzerJob tj = DecodeQueryMessage(Message);
             fTab = FileTable.GetFiles(currDir, fileExt, tj.recursive);
-            foreach (String s in fTab) { Console.Write("{0}\n", s); }
+            //foreach (String s in fTab) { Console.Write("{0}\n", s); }
             List<XmlSearchResult_c> tq = TextQuery.run(fTab, tj.textQueryList.ToArray(), tj.mustFindAll, tj.metadataQueryList.ToArray());
             XDocument xr = new XDocument(new XElement("Query"));
             foreach (XmlSearchResult_c s in tq)
@@ -275,7 +285,7 @@ namespace DocumentVault
         {
             // Get the files without filtering by category
             List<String> fl = GetFileList("");
-            foreach (String s in fl) { Console.Write("{0}\n", s); }
+            //foreach (String s in fl) { Console.Write("{0}\n", s); }
             List<String> metadataTerms = new List<String>();
             metadataTerms.Add("categories");
 
@@ -400,7 +410,7 @@ namespace DocumentVault
                 {
                     msg.Contents = msg.Contents.Substring(1);
                     XDocument xr = MakeResponseXml(msg.Contents);
-                    Console.WriteLine(xr.ToString());
+                    //Console.WriteLine(xr.ToString());
                     ServiceMessage reply = ServiceMessage.MakeMessage("nav-echo", "nav", xr.ToString());
                     reply.TargetUrl = msg.SourceUrl;
                     reply.SourceUrl = msg.TargetUrl;
@@ -440,9 +450,11 @@ namespace DocumentVault
 
                 // Write the metadata file to the server disk
                 xd.Save(FileName + ".metadata");
-
-                // Write the content file to disk
-                File.WriteAllText(FileName, FileContent);
+                if (FileContent.Length > 0)
+                {
+                    // Write the content file to disk, disregard if empty
+                    File.WriteAllText(FileName, FileContent);
+                }
                 return true;
             }
             catch
@@ -463,7 +475,7 @@ namespace DocumentVault
                 if (msg.Contents[0] == '~')  // disregard the message if not prefixed with '~'
                 {
                     msg.Contents = msg.Contents.Substring(1);
-                    Console.Write("\n  {0} Recieved Message:\n", msg.TargetCommunicator);
+                    //Console.Write("\n  {0} Recieved Message:\n", msg.TargetCommunicator);
                     //msg.ShowMessage();
 
                     bool result = SubmitFileFromSubmissionMessage(msg);

@@ -31,7 +31,9 @@ namespace DocumentVault
     /// </summary>
     public partial class QueryVaultServer : Window
     {
-
+        public EchoCommunicator echo = new EchoCommunicator();
+        Sender msgsender = new Sender();
+        Receiver receiver = null;
         private NavWindow _mw;
 
         public QueryVaultServer(NavWindow mw)
@@ -43,8 +45,7 @@ namespace DocumentVault
 
         private void QueryButton_Click(object sender, RoutedEventArgs e)
         {
-            Sender msgsender = new Sender();
-            Receiver receiver = null;
+
 
             string ServerUrl = "http://localhost:8000/CommService";
             msgsender.Connect(ServerUrl);
@@ -69,7 +70,7 @@ namespace DocumentVault
                     new XElement("FindAll", findAllOption),
                     new XElement("Recursive", recursiveOption)));
 
-            EchoCommunicator echo = new EchoCommunicator();
+
             echo.Name = "query-echo";
             receiver.Register(echo);
             echo.Start();
@@ -85,10 +86,10 @@ namespace DocumentVault
         void instanceHandler_OnIncomingEchoEvent(object obj, EventArgs seva)
         {
             Console.WriteLine("Here.");
-                try
+            try
+            {
+                Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
                 {
-                    Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
-                    {
                     QueryResults.Items.Clear();
                     XDocument xd = XDocument.Parse(((someEventArgs)seva).msg);
                     var q = from x in
@@ -101,41 +102,42 @@ namespace DocumentVault
                             QueryResults.Items.Add(elem.ToString());
                     }
                 }));
-                }
-                catch
-                {
-                    // XDocument Exception
-                }
-
-
+            }
+            catch
+            {
+                // XDocument Exception
+            }
 
         }
-
-
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
-
         private void QueryResults_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             //Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
-//{
+            //{
 
-    try
-    {
-        XDocument xd = XDocument.Parse(QueryResults.SelectedItem.ToString());
-        String FileNameSelected = xd.Element("File").FirstNode.ToString();
+            try
+            {
+                XDocument xd = XDocument.Parse(QueryResults.SelectedItem.ToString());
+                String FileNameSelected = xd.Element("File").FirstNode.ToString();
 
-        _mw.setCurrentFileName(FileNameSelected);
+                _mw.setCurrentFileName(FileNameSelected);
 
-    }
-    catch
-    {
-        // XDocument Exception
-    }
-//}));
+            }
+            catch
+            {
+                // XDocument Exception
+            }
+            //}));
 
         }
+
+        public void QueryVaultServer_Unloaded(object sender, RoutedEventArgs e)
+        {
+            echo.Stop();
+
+
+
+            this.Close();
+        }
+
     }
 }

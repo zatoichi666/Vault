@@ -33,6 +33,7 @@ namespace DocumentVault
     {
         private String _Content;
         private NavWindow _mw;
+        EchoCommunicator echo = new EchoCommunicator();
         
         public String pContentText
         {
@@ -117,7 +118,7 @@ namespace DocumentVault
                 string ClientUrl = "http://localhost:8001/CommService";
                 receiver = new Receiver(ClientUrl);
 
-                EchoCommunicator echo = new EchoCommunicator();
+                
                 echo.Name = "submit-echo";
                 receiver.Register(echo);
                 echo.Start();
@@ -129,6 +130,7 @@ namespace DocumentVault
                 msg4.SourceUrl = "http://localhost:8001/CommService";
                 msg4.TargetUrl = "http://localhost:8000/CommService";
                 msgsender.PostMessage(msg4);
+                
                 this.Close();
             }
             catch (XmlException)
@@ -163,6 +165,14 @@ namespace DocumentVault
                 catch { }
 
 
+        }
+
+
+        public void InsertLocalFile_Unloaded(object sender, RoutedEventArgs e)
+        {
+            echo.Stop();
+
+            this.Close();
         }
                 
     }

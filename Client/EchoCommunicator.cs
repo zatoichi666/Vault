@@ -71,7 +71,84 @@ namespace DocumentVault
         public delegate void incomingMsgEventHandler(object sender, EventArgs seva);
         public event incomingMsgEventHandler gotMessage;
 
+        private void ExtractFileList(ref VaultModel vm, XDocument xd)
+        {
+            var q1 = from x in
+                         xd.Elements("Navigation")
+                             //.Elements("FileList")
+                         .Descendants("FileList")
+                     select x;
+            foreach (var elem in q1) { vm.SetFileList(elem.Value.Split(';').ToList<string>()); }
+        }
 
+        private void ExtractCategoryList(ref VaultModel vm, XDocument xd)
+        {
+            var q2 = from x in
+                         xd.Elements("Navigation").Descendants("CategoryList")
+                     select x;
+            foreach (var elem in q2) { vm.SetCategories(elem.Value.Split(';').ToList<string>()); }
+        }
+
+        private void ExtractFileContent(ref VaultModel vm, XDocument xd)
+        {
+            var q3 = from x in
+                         xd.Elements("Navigation").Descendants("FileContent")
+                     select x;
+            foreach (var elem in q3) { vm._ContentFile = Encoding.UTF8.GetString(Convert.FromBase64String(elem.Value)); }
+        }
+
+        private void ExtractMetadataContent(ref VaultModel vm, XDocument xd)
+        {
+            var q4 = from x in
+                         xd.Elements("Navigation").Descendants("MetadataContent")
+                     select x;
+            foreach (var elem in q4) { vm._MetadataFile = Encoding.UTF8.GetString(Convert.FromBase64String(elem.Value)); }
+        }
+
+        private void ExtractParentList(ref VaultModel vm, XDocument xd)
+        {
+            var q5 = from x in
+                         xd.Elements("Navigation").Descendants("ParentList")
+                     select x;
+            foreach (var elem in q5)
+            {
+                List<String> parentList = elem.Value.Split(';').ToList<string>().Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+                if (elem.Value.Length > 0)
+                { vm.SetParents(parentList); }
+                else
+                { vm.SetParents(new List<string>()); }
+            }
+        }
+
+        private void ExtractChildList(ref VaultModel vm, XDocument xd)
+        {
+            var q6 = from x in
+                         xd.Elements("Navigation").Descendants("ChildList")
+                     select x;
+            foreach (var elem in q6)
+            {
+                List<String> childList = elem.Value.Split(';').ToList<string>().Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
+                if (elem.Value.Length > 0)
+                { vm.SetChildren(childList); }
+                else
+                { vm.SetChildren(new List<string>()); }
+            }
+        }
+
+        public void HandleMessage(String message, ref VaultModel vm)
+        {
+            XDocument xd = XDocument.Parse(message);
+            List<String> FileList = new List<String>();
+
+            List<String> CategoryList = new List<String>();
+            this.ExtractFileList(ref vm, xd);
+            this.ExtractCategoryList(ref vm, xd);
+            this.ExtractFileContent(ref vm, xd);
+            this.ExtractMetadataContent(ref vm, xd);
+            this.ExtractParentList(ref vm, xd);
+            this.ExtractChildList(ref vm, xd);
+
+        }
 
         protected override void ProcessMessages()
         {
@@ -88,7 +165,7 @@ namespace DocumentVault
                                 
                 if (msg.Contents == "quit")
                 {
-                    if (Verbose)
+                    //if (Verbose)
                         Console.Write("\n  Echo shutting down");
 
                     // shut down dispatcher

@@ -1,4 +1,4 @@
-﻿<Window x:Class="WPF_DispatcherDemo.QueryVaultServer"
+﻿<Window x:Class="DocumentVault.QueryVaultServer"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Query the Vault Server" Height="300" Width="800">
@@ -10,9 +10,10 @@
         <GroupBox Header="Query">
             <Grid>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="3*"/>
+                    <RowDefinition Height="3*"/>
+                    <RowDefinition Height="3*"/>
                     <RowDefinition Height="2*"/>
-                    <RowDefinition Height="3*"/>
-                    <RowDefinition Height="3*"/>
                     <RowDefinition Height="2*"/>
                     
                 </Grid.RowDefinitions>
@@ -30,7 +31,7 @@
                         </Grid.ColumnDefinitions>
                         <TextBox Name="TextQueryTextBox" Grid.Column="0"/>
                                     
-                    </Grid>                    
+                    </Grid>
                 </GroupBox >
                 <Grid Grid.Row="3">
                     <Grid>
@@ -48,7 +49,7 @@
                         <CheckBox Name="RecursiveCheckbox" Grid.Row="1" Grid.Column="0" IsChecked="False" >Recursive</CheckBox>
                     </Grid>
                 </Grid>
-                <Grid Grid.Row="3">
+                <Grid Grid.Row="4">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>

@@ -1,6 +1,7 @@
 ﻿///////////////////////////////////////////////////////////////////////////////
 // Server.cs - Document Vault Server prototype                               //
 //                                                                           //
+// Matthew Synborski - Modified for Project 4                                //
 // Jim Fawcett, CSE681 - Software Modeling and Analysis, Fall 2013           //
 ///////////////////////////////////////////////////////////////////////////////
 /*
@@ -8,19 +9,27 @@
  *  -----------------
  *  This package defines four classes:
  *  Server:
- *    Provides prototype behavior for the DocumentVault server.
+ *    Provides expanded behavior for the Vault server.
  *  EchoCommunicator:
  *    Simply diplays its messages on the server Console.
  *  QueryCommunicator:
- *    Serves as a placeholder for query processing.  You should be able to
- *    invoke your Project #2 query processing from the ProcessMessages function.
+ *    Serves as communicator for query processing.  Handles category-filterable text 
+ *    and metadata queries via TextQuery.
  *  NavigationCommunicator:
- *    Serves as a placeholder for navigation processing.  You should be able to
- *    invoke your navigation processing from the ProcessMessages function.
+ *    Serves as a communicator for navigation processing.  Provides a list of 
+ *    categories, children and parents.
+ *    Provides file content and metadata content if the Navigation request 
+ *    specifies a filename.
+ *  SubmissionCommunicator:
+ *    Serves as a communicator for submission processing.  Takes a content string and
+ *    a metadata string.  Upon receipt, opens a new file and writes content to the 
+ *    specified filename.  Opens a new file and writes metadata to the specified 
+ *    filename.metadata.
+ *  
  * 
  *  Required Files:
  *  - Server:      Server.cs, Sender.cs, Receiver.cs
- *  - Components:  ICommLib, AbstractCommunicator, BlockingQueue
+ *  - Components:  ICommLib, AbstractCommunicator, BlockingQueue, TextQuery
  *  - CommService: ICommService, CommService
  *
  *  Required References:
@@ -30,6 +39,7 @@
  *  Build Command:  devenv Project4HelpF13.sln /rebuild debug
  *
  *  Maintenace History:
+ *  ver 3.0 : Nov 17, 2013
  *  ver 2.1 : Nov 7, 2013
  *  - replaced ServerSender with a merged Sender class
  *  ver 2.0 : Nov 5, 2013
@@ -46,8 +56,8 @@ using System.ServiceModel;
 using TextAnalyzer;
 using System.Xml.Linq;
 using System.IO;
-using System.Collections.Generic;
-
+using System.ServiceModel.Activation;
+using FileTransferService;
 
 namespace DocumentVault
 {
@@ -57,6 +67,7 @@ namespace DocumentVault
     {
         protected override void ProcessMessages()
         {
+
             while (true)
             {
                 ServiceMessage msg = bq.deQ();
@@ -110,6 +121,53 @@ namespace DocumentVault
             Console.WriteLine("MetadataQuery terms: {0}", tj.taskPath);
             return tj;
         }
+
+        /// <summary>
+        /// Create the response message (XDocument) for the incoming message
+        /// </summary>
+        /// <param name="Message"></param>
+        /// <returns></returns>
+        private XDocument MakeResponseXml(String Message)
+        {
+            String[] fileExt = { "*.*" };
+            Directory.SetCurrentDirectory(Directory.GetCurrentDirectory());
+            String currDir = Directory.GetCurrentDirectory();
+            TextAnalyzerJob tj = DecodeQueryMessage(Message);
+            fTab = FileTable.GetFiles(currDir, fileExt, tj.recursive);
+            foreach (String s in fTab) { Console.Write("{0}\n", s); }
+            List<XmlSearchResult_c> tq = TextQuery.run(fTab, tj.textQueryList.ToArray(), tj.mustFindAll, tj.metadataQueryList.ToArray());
+            XDocument xr = new XDocument(new XElement("Query"));
+            foreach (XmlSearchResult_c s in tq)
+            {
+                String filename = Path.GetFileName(s.filename);
+                XElement xe = new XElement("File", Path.GetFileName(filename));
+                if (s.textQueryFound)
+                {
+                    String[] ls = s.tagAndValue.ToArray();
+                    String[] sep = { ":" };
+                    xe.Add(new XElement("TextQuerySuccess"));
+                }
+                if (s.tagAndValue.Count > 0)
+                {
+                    String[] sep = { ":" };
+                    foreach (String t in s.tagAndValue)
+                    {
+                        xe.Add(new XElement(
+                        t.Split(sep, StringSplitOptions.None)[0],
+                        t.Split(sep, StringSplitOptions.None)[1])
+                        );
+                    }
+                }
+                if (s.tagAndValue.Count > 0 || s.textQueryFound)
+                {
+                    xr.Element("Query").Add(xe);
+                }
+            }
+
+
+            return xr;
+        }
+
         /// <summary>
         /// Performs the query as requested by the user, returns a response containing hte results of the query
         /// Text Query will be performed regardless of the results of the Metadata Query
@@ -124,52 +182,23 @@ namespace DocumentVault
                 ServiceMessage msg = bq.deQ();
                 if (msg.Contents == "quit")
                     break;
-                String[] fileExt = { "*.*" };
-                Directory.SetCurrentDirectory(Directory.GetCurrentDirectory());
-                String currDir = Directory.GetCurrentDirectory();
-                TextAnalyzerJob tj = DecodeQueryMessage(msg.Contents);
-                fTab = FileTable.GetFiles(currDir, fileExt, tj.recursive);
-                foreach (String s in fTab) { Console.Write("{0}\n", s); }
-                List<XmlSearchResult_c> tq = TextQuery.run(fTab, tj.textQueryList.ToArray(), tj.mustFindAll, tj.metadataQueryList.ToArray());
-                XDocument xr = new XDocument(new XElement("Query"));
-                foreach (XmlSearchResult_c s in tq)
+                if (msg.Contents[0] == '~')  // disregard the message if not prefixed with '~'
                 {
-                    String filename = Path.GetFileName(s.filename);
-                    XElement xe = new XElement("File", Path.GetFileName(filename));
-                    if (s.textQueryFound)
-                    {
-                        String[] ls = s.tagAndValue.ToArray();
-                        String[] sep = { ":" };
-                        xe.Add(new XElement("TextQuerySuccess"));
-                    }
-                    if (s.tagAndValue.Count > 0)
-                    {
-                        String[] sep = { ":" };
-                        foreach (String t in s.tagAndValue)
-                        {
-                            xe.Add(new XElement(
-                            t.Split(sep, StringSplitOptions.None)[0],
-                            t.Split(sep, StringSplitOptions.None)[1])
-                            );
-                        }
-                    }
-                    if (s.tagAndValue.Count > 0 || s.textQueryFound)
-                    {
-                        xr.Element("Query").Add(xe);
-                    }
+                    msg.Contents = msg.Contents.Substring(1);
+                    XDocument xr = MakeResponseXml(msg.Contents);
+                    ServiceMessage reply = ServiceMessage.MakeMessage("query-echo", "query", xr.ToString());
+                    reply.TargetUrl = msg.SourceUrl;
+                    reply.SourceUrl = msg.TargetUrl;
+                    AbstractMessageDispatcher dispatcher = AbstractMessageDispatcher.GetInstance();
+                    dispatcher.PostMessage(reply);
                 }
-                ServiceMessage reply = ServiceMessage.MakeMessage("query-echo", "query", xr.ToString());
-                reply.TargetUrl = msg.SourceUrl;
-                reply.SourceUrl = msg.TargetUrl;
-                AbstractMessageDispatcher dispatcher = AbstractMessageDispatcher.GetInstance();
-                dispatcher.PostMessage(reply);
             }
         }
     }
     // Navigate Communicator
     class NavigationCommunicator : AbstractCommunicator
     {
-        private List<String> GetParents(String childFile)
+        private List<String> GetChildren(String childFile)
         {
             List<String> Parents = new List<String>();
             List<String> fl = GetFileList("");
@@ -234,7 +263,7 @@ namespace DocumentVault
                         {
                             if (c == Category)
                                 FileList.Add(xsr.filename);
-                        }                        
+                        }
                     }
                 }
                 XDocument xr = new XDocument(new XElement("Query"));
@@ -274,7 +303,89 @@ namespace DocumentVault
             return categories;
         }
 
-        // GetChildren() is implemented inline in the formation of the XDocument object
+
+        private String ExtractCategory(XDocument xd)
+        {
+            String CategorySelected = "";
+            var q1 = from x in
+                         xd.Elements("ContentRequest").Descendants("Category")
+                     select x;
+            foreach (var elem in q1)
+            { CategorySelected = elem.Value; }
+            return CategorySelected;
+        }
+
+        private String ExtractFileName(XDocument xd)
+        {
+            String FileNameSelected = "";
+            var q2 = from x in
+                         xd.Elements("ContentRequest").Descendants("File")
+                     select x;
+            foreach (var elem in q2)
+            { FileNameSelected = elem.Value; }
+            return FileNameSelected;
+        }
+
+        private String ExtractParentList(String MetadataContent)
+        {
+            String ParentList = "";
+            try
+            {   if (MetadataContent.Length > 0)
+                {
+                    XDocument md = XDocument.Parse(MetadataContent);
+                    var q4 = from x in
+                                 md.Elements("metadata").Descendants("dependency")
+                             select x;
+                    foreach (var elem in q4) { ParentList += Path.GetFileName(elem.Value) + ';'; }
+                }
+            } catch { }
+
+            return ParentList;
+
+        }
+
+        /// <summary>
+        /// Create the response message (XDocument) for the incoming message
+        /// </summary>
+        /// <param name="Message"></param>
+        /// <returns></returns>
+        private XDocument MakeResponseXml(String message)
+        {
+            XDocument xd = XDocument.Parse(message);
+            String CategorySelected = "";
+            String FileNameSelected = "";
+
+            CategorySelected = ExtractCategory(xd);
+            FileNameSelected = ExtractFileName(xd);
+
+
+            String fileList = String.Join(";", GetFileList(CategorySelected));
+            String categoryList = String.Join(";", GetCategoryList());
+            String FileContent = "";
+            String MetadataContent = "";
+            if (File.Exists(FileNameSelected))
+                FileContent = File.ReadAllText(FileNameSelected);
+            if (File.Exists(FileNameSelected + ".metadata"))
+                MetadataContent = File.ReadAllText(FileNameSelected + ".metadata");
+            String FileContent64enc = Convert.ToBase64String(Encoding.UTF8.GetBytes(FileContent));
+            String Metadata64enc = Convert.ToBase64String(Encoding.UTF8.GetBytes(MetadataContent));
+            List<String> ChildList = GetChildren(FileNameSelected);
+            String ParentList = "";
+
+            ParentList = ExtractParentList(MetadataContent);
+
+            XDocument xr = new XDocument(
+                new XDeclaration("1.0", "utf-8", null),
+                new XElement("Navigation",
+                new XElement("FileList", fileList),
+                new XElement("CategoryList", categoryList),
+                new XElement("FileContent", FileContent64enc),
+                new XElement("MetadataContent", Metadata64enc),
+                new XElement("ChildList", String.Join(";", ChildList)),
+                new XElement("ParentList", ParentList)
+            ));
+            return xr;
+        }
 
         protected override void ProcessMessages()
         {
@@ -283,98 +394,19 @@ namespace DocumentVault
                 ServiceMessage msg = bq.deQ();
                 //Console.Write("\n  {0} Recieved Message:\n", msg.TargetCommunicator);
                 msg.ShowMessage();
-
                 if (msg.Contents == "quit")
                     break;
-
-                XDocument xd = XDocument.Parse(msg.Contents);
-                String CategorySelected = "";
-                String FileNameSelected = "";
-
-                var q1 = from x in
-                             xd.Elements("ContentRequest")
-                             .Descendants("Category")
-                         select x;
-                foreach (var elem in q1)
+                if (msg.Contents[0] == '~')  // disregard the message if not prefixed with '~'
                 {
-                    CategorySelected = elem.Value;
+                    msg.Contents = msg.Contents.Substring(1);
+                    XDocument xr = MakeResponseXml(msg.Contents);
+                    Console.WriteLine(xr.ToString());
+                    ServiceMessage reply = ServiceMessage.MakeMessage("nav-echo", "nav", xr.ToString());
+                    reply.TargetUrl = msg.SourceUrl;
+                    reply.SourceUrl = msg.TargetUrl;
+                    AbstractMessageDispatcher dispatcher = AbstractMessageDispatcher.GetInstance();
+                    dispatcher.PostMessage(reply);
                 }
-
-                var q2 = from x in
-                             xd.Elements("ContentRequest")
-                             .Descendants("File")
-
-                         select x;
-                foreach (var elem in q2)
-                {
-                    FileNameSelected = elem.Value;
-                }
-
-                // Filter the filelist by category
-                
-                String fileList = String.Join(";", GetFileList(CategorySelected));
-                String categoryList = String.Join(";", GetCategoryList());
-
-
-
-                // Get the File Content
-                String FileContent = "";
-                String MetadataContent = "";
-                if (File.Exists(FileNameSelected))
-                    FileContent = File.ReadAllText(FileNameSelected);
-
-                if (File.Exists(FileNameSelected + ".metadata"))
-                    MetadataContent = File.ReadAllText(FileNameSelected + ".metadata");
-
-                String FileContent64enc = Convert.ToBase64String(Encoding.UTF8.GetBytes(FileContent));
-                String Metadata64enc = Convert.ToBase64String(Encoding.UTF8.GetBytes(MetadataContent));
-
-                List<String> ParentList = GetParents(FileNameSelected);
-
-                String ChildList = "";
-                // Get the dependencies
-                try
-                {
-                    if (MetadataContent.Length > 0)
-                    {
-
-                        XDocument md = XDocument.Parse(MetadataContent);
-
-
-                        var q4 = from x in
-                                     md.Elements("metadata")
-                                     .Descendants("dependency")
-
-                                 select x;
-                        foreach (var elem in q4)
-                        {
-                            ChildList += Path.GetFileName(elem.Value) + ';';
-                        }
-                    }
-                }
-                catch (InvalidDataException e)
-                {
-
-                }
-
-                XDocument xr = new XDocument(
-                    new XDeclaration("1.0", "utf-8", null),
-                    new XElement("Navigation",
-                    new XElement("FileList", fileList),
-                    new XElement("CategoryList", categoryList),
-                    new XElement("FileContent", FileContent64enc),
-                    new XElement("MetadataContent", Metadata64enc),
-                    new XElement("ChildList", ChildList),
-                    new XElement("ParentList", String.Join(";", ParentList))
-                ));
-
-                Console.WriteLine(xr.ToString());
-
-                ServiceMessage reply = ServiceMessage.MakeMessage("nav-echo", "nav", xr.ToString());
-                reply.TargetUrl = msg.SourceUrl;
-                reply.SourceUrl = msg.TargetUrl;
-                AbstractMessageDispatcher dispatcher = AbstractMessageDispatcher.GetInstance();
-                dispatcher.PostMessage(reply);
             }
         }
     }
@@ -428,19 +460,19 @@ namespace DocumentVault
 
                 if (msg.Contents == "quit")
                     break;
+                if (msg.Contents[0] == '~')  // disregard the message if not prefixed with '~'
+                {
+                    msg.Contents = msg.Contents.Substring(1);
+                    Console.Write("\n  {0} Recieved Message:\n", msg.TargetCommunicator);
+                    //msg.ShowMessage();
 
-                Console.Write("\n  {0} Recieved Message:\n", msg.TargetCommunicator);
-                //msg.ShowMessage();
-
-                bool result = SubmitFileFromSubmissionMessage(msg);
-
-
-
-                ServiceMessage reply = ServiceMessage.MakeMessage("submit-echo", "submit", result.ToString());
-                reply.TargetUrl = msg.SourceUrl;
-                reply.SourceUrl = msg.TargetUrl;
-                AbstractMessageDispatcher dispatcher = AbstractMessageDispatcher.GetInstance();
-                dispatcher.PostMessage(reply);
+                    bool result = SubmitFileFromSubmissionMessage(msg);
+                    ServiceMessage reply = ServiceMessage.MakeMessage("submit-echo", "submit", result.ToString());
+                    reply.TargetUrl = msg.SourceUrl;
+                    reply.SourceUrl = msg.TargetUrl;
+                    AbstractMessageDispatcher dispatcher = AbstractMessageDispatcher.GetInstance();
+                    dispatcher.PostMessage(reply);
+                }
             }
         }
     }
@@ -453,10 +485,8 @@ namespace DocumentVault
         {
             Console.Write("\n  Starting CommService");
             Console.Write("\n ======================\n");
-
             string ServerUrl = "http://localhost:8000/CommService";
             Receiver receiver = new Receiver(ServerUrl);
-
             string ClientUrl = "http://localhost:8001/CommService";
 
             Sender sender = new Sender();
@@ -494,12 +524,6 @@ namespace DocumentVault
             submit.Name = "submit";
             receiver.Register(submit);
             submit.Start();
-
-
-            Console.Write("\n  Started CommService - Press key to exit:\n ");
-            Console.ReadKey();
-
-
         }
     }
 }

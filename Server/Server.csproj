@@ -31,9 +31,18 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+<ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+</PropertyGroup>
   <ItemGroup>
+    <Reference Include="FileServiceClient">
+      <HintPath>..\libs\FileServiceClient.dll</HintPath>
+    </Reference>
     <Reference Include="FileTable">
       <HintPath>..\libs\FileTable.dll</HintPath>
+    </Reference>
+    <Reference Include="FileTransferService">
+      <HintPath>..\libs\FileTransferService.dll</HintPath>
     </Reference>
     <Reference Include="Job, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

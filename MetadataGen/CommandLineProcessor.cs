@@ -1,15 +1,16 @@
-﻿using System;
+﻿/// <summary>
+/// Matthew Synborski
+/// CSE-681 Fall 2013 for Dr. Jim Fawcett
+/// 
+/// Description: CommandLineProcessor class is used for taking in the arguments from the command line input
+/// and packaging them into a container of String_s objects, one for each user-specified switch.  
+/// </summary>
+using System;
 using System.Collections.Generic;
 
 namespace TextAnalyzer
 {
-    /// <summary>
-    /// Matthew Synborski
-    /// CSE-681 Fall 2013 for Dr. Jim Fawcett
-    /// 
-    /// Description: CommandLineProcessor class is used for taking in the arguments from the command line input
-    /// and packaging them into a container of String_s objects, one for each user-specified switch.  
-    /// </summary>
+
     public class CommandLineProcessor
     {
         static void Main(string[] args)

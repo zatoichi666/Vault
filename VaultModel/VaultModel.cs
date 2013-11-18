@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 
-namespace WPF_DispatcherDemo
+namespace DocumentVault
 {
 
-    class VaultModel
+    public class VaultModel
     {
         // Properties
         public int _indexSelectedCategory { get; set; }

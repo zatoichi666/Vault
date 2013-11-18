@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WPF_DispatcherDemo.Properties {
+namespace DocumentVault.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

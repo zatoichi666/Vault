@@ -8,8 +8,8 @@
     <ProjectGuid>{1D3FD1B0-B356-4A89-9C79-ABABA347BCDB}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WPF_DispatcherDemo</RootNamespace>
-    <AssemblyName>WPF_DispatcherDemo</AssemblyName>
+    <RootNamespace>DocumentVault</RootNamespace>
+    <AssemblyName>VaultClient</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -39,15 +39,21 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>WPF_DispatcherDemo.App</StartupObject>
+    <StartupObject>DocumentVault.App</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Accessibility" />
+    <Reference Include="CommClient">
+      <HintPath>..\libs\CommClient.dll</HintPath>
+    </Reference>
     <Reference Include="CommService">
       <HintPath>..\libs\CommService.dll</HintPath>
     </Reference>
     <Reference Include="ConsoleManager">
       <HintPath>..\libs\ConsoleManager.dll</HintPath>
+    </Reference>
+    <Reference Include="FileServiceClient">
+      <HintPath>..\libs\FileServiceClient.dll</HintPath>
     </Reference>
     <Reference Include="Job">
       <HintPath>..\libs\Job.dll</HintPath>
@@ -88,6 +94,9 @@
     </Reference>
     <Reference Include="UIAutomationProvider" />
     <Reference Include="UIAutomationTypes" />
+    <Reference Include="VaultModel">
+      <HintPath>..\libs\VaultModel.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -97,16 +106,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Client.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="NavWindow.xaml.cs">
       <DependentUpon>NavWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="QueryVaultServer.xaml.cs">
       <DependentUpon>QueryVaultServer.xaml</DependentUpon>
     </Compile>
-    <Compile Include="VaultModel.cs" />
     <Page Include="InsertLocalFile.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -180,9 +185,6 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Todo.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <metadata>
   <filename>C:\School\CSE-681\Project4-Vault\Vault\Sender\ICommLib.cs</filename>
-  <version>0</version>
   <time>20131107075830</time>
-  <description></description>
   <size>1190</size>
-  <categories>blueberry</categories>
   <dependency>ICommServiceLib.cs;AbstractCommunicator.cs</dependency>
+  <description>This is part of the communications module for the Vault Server and Client.</description>
+  <version>1</version>
+  <categories>papaya;blueberry</categories>
 </metadata>

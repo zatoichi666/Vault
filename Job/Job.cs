@@ -1,4 +1,17 @@
-﻿using System;
+﻿///////////////////////////////////////////////////////////////////////////////
+// Job.cs - Utility class for collecting a list of inputs for the            //
+// TextAnalyzer                                                              //
+//                                                                           //
+// Matthew Synborski, CSE681 - Software Modeling and Analysis, Fall 2013     //
+///////////////////////////////////////////////////////////////////////////////
+/*
+ *
+ * Required References:
+ * - System.Collections.Generic;
+ * - System.Xml.Linq
+ */
+
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -414,11 +427,6 @@ namespace TextAnalyzer
                 else if (element.switchChar == "E")
                 {
                     returncode = handleSwitchE(element);
-                }
-                // Handle Keywords switch
-                else if (element.switchChar == "K")
-                {
-                    returncode = handleSwitchK(element);
                 }
                 // Handle file switch
                 else if (element.switchChar == "F")

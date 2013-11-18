@@ -5,7 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Windows;
 
-namespace WPF_DispatcherDemo
+namespace DocumentVault
 {
   /// <summary>
   /// Interaction logic for App.xaml

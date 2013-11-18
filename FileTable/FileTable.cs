@@ -1,4 +1,16 @@
-﻿using System;
+﻿///////////////////////////////////////////////////////////////////////////////
+// FileTable.cs - Utility class for collecting a list of files, using        //
+// recursion.                                                                 //
+//                                                                           //
+// Matthew Synborski, CSE681 - Software Modeling and Analysis, Fall 2013     //
+///////////////////////////////////////////////////////////////////////////////
+/*
+ *
+ * Required References:
+ * - System.Threading.Tasks
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

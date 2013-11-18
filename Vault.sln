@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextQuery", "TextQuery\Text
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleManager", "ConsoleManager\ConsoleManager.csproj", "{B7349BB9-8E83-4BB8-B59E-49C53569E7F1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VaultModel", "VaultModel\VaultModel.csproj", "{7CCD8830-D885-4717-8F9C-A89901B6BE4A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -215,6 +217,16 @@ Global
 		{B7349BB9-8E83-4BB8-B59E-49C53569E7F1}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{B7349BB9-8E83-4BB8-B59E-49C53569E7F1}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{B7349BB9-8E83-4BB8-B59E-49C53569E7F1}.Release|x86.ActiveCfg = Release|Any CPU
+		{7CCD8830-D885-4717-8F9C-A89901B6BE4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CCD8830-D885-4717-8F9C-A89901B6BE4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CCD8830-D885-4717-8F9C-A89901B6BE4A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{7CCD8830-D885-4717-8F9C-A89901B6BE4A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{7CCD8830-D885-4717-8F9C-A89901B6BE4A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7CCD8830-D885-4717-8F9C-A89901B6BE4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CCD8830-D885-4717-8F9C-A89901B6BE4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CCD8830-D885-4717-8F9C-A89901B6BE4A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{7CCD8830-D885-4717-8F9C-A89901B6BE4A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{7CCD8830-D885-4717-8F9C-A89901B6BE4A}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,13 @@
-﻿using System;
+﻿/// <summary>    
+/// Matthew Synborski
+/// CSE-681 Fall 2013 for Dr. Jim Fawcett
+/// 
+/// Description: TextQuery Class - Performs Text Query on a list of fully qualified filenames
+/// This Query iterates through each filename, parsing the file completely, looking for any 
+/// or all of the search strings.
+/// 
+/// </summary>
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,15 +20,7 @@ using Microsoft.Office.Interop.Word;
 
 namespace TextAnalyzer
 {
-    /// <summary>    
-    /// Matthew Synborski
-    /// CSE-681 Fall 2013 for Dr. Jim Fawcett
-    /// 
-    /// Description: TextQuery Class - Performs Text Query on a list of fully qualified filenames
-    /// This Query iterates through each filename, parsing the file completely, looking for any 
-    /// or all of the search strings.
-    /// 
-    /// </summary>
+
     public static class TextQuery
     {
         /// <summary>

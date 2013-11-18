@@ -1,4 +1,11 @@
-﻿using System;
+﻿///////////////////////////////////////////////////////////////////////////////
+// QueryVaultServer.xaml.cs - Document Vault client codebehind               //
+//  Provides minor window paint logic for Main Navigation View.              //
+//                                                                           //
+// Matthew Synborski - Software Modeling and Analysis, Fall 2013             //
+///////////////////////////////////////////////////////////////////////////////
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,7 +24,7 @@ using TextAnalyzer;
 
 
 
-namespace WPF_DispatcherDemo
+namespace DocumentVault
 {
     /// <summary>
     /// Interaction logic for QueryVaultServer.xaml
@@ -69,7 +76,7 @@ namespace WPF_DispatcherDemo
             echo.gotMessage +=
                 new EchoCommunicator.incomingMsgEventHandler(instanceHandler_OnIncomingEchoEvent);
             ServiceMessage msg4 =
-            ServiceMessage.MakeMessage("query", "ServiceClient", xd.ToString(), "no name");
+            ServiceMessage.MakeMessage("query", "ServiceClient", "~" + xd.ToString(), "no name");
             msg4.SourceUrl = "http://localhost:8001/CommService";
             msg4.TargetUrl = "http://localhost:8000/CommService";
             msgsender.PostMessage(msg4);
@@ -77,10 +84,11 @@ namespace WPF_DispatcherDemo
 
         void instanceHandler_OnIncomingEchoEvent(object obj, EventArgs seva)
         {
-            Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
-            {
+            Console.WriteLine("Here.");
                 try
                 {
+                    Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
+                    {
                     QueryResults.Items.Clear();
                     XDocument xd = XDocument.Parse(((someEventArgs)seva).msg);
                     var q = from x in
@@ -92,12 +100,13 @@ namespace WPF_DispatcherDemo
                         if (elem.ToString().Contains(CategoryFilterTextBox.Text.Trim()))
                             QueryResults.Items.Add(elem.ToString());
                     }
+                }));
                 }
                 catch
                 {
                     // XDocument Exception
                 }
-            }));
+
 
 
         }
@@ -110,22 +119,23 @@ namespace WPF_DispatcherDemo
 
         private void QueryResults_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
-            {
-                try
-                {
-                    XDocument xd = XDocument.Parse(QueryResults.SelectedItem.ToString());
-                    String FileNameSelected = xd.Element("File").FirstNode.ToString();
+            //Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
+//{
 
-                    _mw.setCurrentFileName(FileNameSelected);
+    try
+    {
+        XDocument xd = XDocument.Parse(QueryResults.SelectedItem.ToString());
+        String FileNameSelected = xd.Element("File").FirstNode.ToString();
 
-                }
-                catch
-                {
-                    // XDocument Exception
-                }
+        _mw.setCurrentFileName(FileNameSelected);
 
-            }));
+    }
+    catch
+    {
+        // XDocument Exception
+    }
+//}));
+
         }
     }
 }

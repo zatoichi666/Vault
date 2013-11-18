@@ -1,4 +1,12 @@
-﻿using System;
+﻿/// <summary>
+/// Matthew Synborski
+/// CSE-681 Fall 2013 for Dr. Jim Fawcett
+/// 
+/// Description: Switch_c class is used for storing a pair of strings.  
+/// The switchChar contains a single character string.  
+/// The payload contains the payload passed along with the switch
+/// </summary>
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,14 +14,7 @@ using System.Threading.Tasks;
 
 namespace TextAnalyzer
 {
-    /// <summary>
-    /// Matthew Synborski
-    /// CSE-681 Fall 2013 for Dr. Jim Fawcett
-    /// 
-    /// Description: Switch_c class is used for storing a pair of strings.  
-    /// The switchChar contains a single character string.  
-    /// The payload contains the payload passed along with the switch
-    /// </summary>
+
     public class Switch_c
     {
         static void Main()

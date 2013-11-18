@@ -1,4 +1,15 @@
-﻿using System;
+﻿/// <summary>
+/// Matthew Synborski
+/// CSE-681 Fall 2013 for Dr. Jim Fawcett
+/// 
+/// Description: TextAnalyzer class is a top-level class (executable).
+/// This aggregates a command line processor to take switches from the user's inputs.  The switches are used to populate a job object.  
+/// The job object is of TextAnalyzerJob type.  This job operates on a list of files, looking first for associated metadata files.  
+/// If metadata files are found the job's metadata tags are queried from the file list's metadata.  If the job also contains textQuery 
+/// strings, they are queried from the file list.
+/// 
+/// </summary>
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,17 +17,7 @@ using System.Threading.Tasks;
 
 namespace TextAnalyzer
 {
-    /// <summary>
-    /// Matthew Synborski
-    /// CSE-681 Fall 2013 for Dr. Jim Fawcett
-    /// 
-    /// Description: TextAnalyzer class is a top-level class (executable).
-    /// This aggregates a command line processor to take switches from the user's inputs.  The switches are used to populate a job object.  
-    /// The job object is of TextAnalyzerJob type.  This job operates on a list of files, looking first for associated metadata files.  
-    /// If metadata files are found the job's metadata tags are queried from the file list's metadata.  If the job also contains textQuery 
-    /// strings, they are queried from the file list.
-    /// 
-    /// </summary>
+
     class TextAnalyzer
     {
 
